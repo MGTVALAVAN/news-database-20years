@@ -89,7 +89,13 @@ def fetch_top_news(max_items=100):
     """
     print(f"📰 Fetching top {max_items} news items from Google News...")
     
-    feed = feedparser.parse(f"{GOOGLE_NEWS_RSS}?hl=en-IN&gl=IN&ceid=IN:en")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
+    feed = feedparser.parse(
+        f"{GOOGLE_NEWS_RSS}?hl=en-IN&gl=IN&ceid=IN:en",
+        request_headers=headers
+    )
     
     news_items = []
     for entry in tqdm(feed.entries[:max_items], desc="Processing"):

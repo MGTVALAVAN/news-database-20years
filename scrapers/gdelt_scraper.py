@@ -56,7 +56,7 @@ def _classify_theme(themes_str):
     return "General", ""
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=30))
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=6, max=60))
 def _query_gdelt_doc(query, start_date, end_date, max_records=250, mode="artlist"):
     """
     Query GDELT DOC 2.0 API.
@@ -83,6 +83,9 @@ def _query_gdelt_doc(query, start_date, end_date, max_records=250, mode="artlist
     }
     
     resp = requests.get(GDELT_DOC_API, params=params, timeout=30)
+    if resp.status_code == 429:
+        time.sleep(10)  # Extra wait on rate limit
+        raise requests.exceptions.HTTPError("Rate limited (429)")
     resp.raise_for_status()
     return resp.json()
 
@@ -142,7 +145,22 @@ def fetch_gdelt_articles(query="India", start_date=None, end_date=None, max_reco
         }
         
         if item["headline"]:  # Skip empty headlines
-            news_items.append(item)
+            # Filter out non-English articles (CJK, Arabic, etc.)
+            try:
+                item["headline"].encode('ascii')
+                is_english = True
+            except UnicodeEncodeError:
+                # Allow common accented chars but skip CJK/Arabic
+                import unicodedata
+                non_ascii = [c for c in item["headline"] if ord(c) > 127]
+                is_english = all(
+                    unicodedata.category(c).startswith(('L', 'P', 'Z', 'S'))
+                    and ord(c) < 0x2000
+                    for c in non_ascii
+                ) if non_ascii else True
+            
+            if is_english:
+                news_items.append(item)
     
     return news_items
 
@@ -171,16 +189,12 @@ def fetch_gdelt_historical(
     # Topic queries for comprehensive UPSC coverage
     if india_focus:
         topic_queries = [
-            "India parliament legislation",
-            "India Supreme Court verdict",
-            "India economy GDP budget",
-            "India foreign policy diplomacy",
-            "India ISRO space mission",
-            "India environment climate",
-            "India defence military",
-            "India election political",
-            "India education health welfare",
-            "India infrastructure development",
+            "India parliament",
+            "India economy",
+            "India diplomacy",
+            "India environment",
+            "India technology",
+            "India defence",
         ]
     else:
         topic_queries = [
@@ -237,7 +251,7 @@ def fetch_gdelt_historical(
                                 seen_headlines.add(headline_key)
                                 month_items.append(item)
                         
-                        time.sleep(REQUEST_DELAY_SECONDS)
+                        time.sleep(6)  # GDELT requires min 5s between requests
                         
                     except Exception as e:
                         print(f"\n  ⚠️ Error on {year}-{month:02d} [{query}]: {e}")
