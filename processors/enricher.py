@@ -59,7 +59,7 @@ def extract_keywords_nltk(text, top_n=5):
         keywords = [word for word, count in counter.most_common(top_n)]
         return keywords
         
-    except ImportError:
+    except (ImportError, LookupError, Exception):
         return _simple_keyword_extract(text, top_n)
 
 
