@@ -1,0 +1,16 @@
+# Outputs
+outputs/*.csv
+outputs/*.xlsx
+
+# Environment
+.env
+__pycache__/
+*.pyc
+.DS_Store
+
+# Logs
+logs/
+
+# Virtual environment
+venv/
+.venv/
