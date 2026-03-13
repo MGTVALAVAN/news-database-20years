@@ -11,15 +11,16 @@ gnews>=0.3.7
 
 # GDELT
 gdeltdoc>=1.4.0
-google-cloud-bigquery>=3.11.0
 
 # NLP & Text Processing
-newspaper3k>=0.2.8
 nltk>=3.8.0
-spacy>=3.6.0
 
 # Utilities
 tqdm>=4.65.0
 python-dotenv>=1.0.0
 tenacity>=8.2.0
 schedule>=1.2.0
+
+# Optional: Better NLP (install separately if needed)
+# spacy>=3.6.0
+# python -m spacy download en_core_web_sm

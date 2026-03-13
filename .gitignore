@@ -1,6 +1,12 @@
 # Outputs
 outputs/*.csv
 outputs/*.xlsx
+outputs/*.txt
+
+# Database
+*.db
+*.db-wal
+*.db-shm
 
 # Environment
 .env
